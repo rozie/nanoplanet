@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html lang=pl>
+<head>
+<meta charset=utf-8>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>{{ name }}</title>
+</head>
+<body>
+<h1>{{ name }}</h1>
+<div class=top_bar></div>
+
+<ul>
+{% for item in Items %}
+<h2><a class=author href="{{ item.feedlink | e }}" title="{{ item.blogtitle | e }}">{{ item.name | e }}</a>{% if item.title %} <a{% if item.link %} href="{{ item.link | e }}"{% endif %}{% if item.title_language %} lang="{{ item.title_language }}"{% endif %}>{{ item.title }}</a></h2>{% endif %}
+{% if item.description %}<div class="content">{{ item.description }}</div>{% endif %}
+</li>
+{% endfor %}
+</ul>
+
+<hr>
+<div id=footer>
+<ul class="simple horizontal">
+{% for channel in Channels -%}
+<li><a href="{{ channel.link | e }}" title="{{ channel.title | e }}">{{ channel.name }}</a></li>
+{% endfor %}
+</ul>

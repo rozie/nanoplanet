@@ -1,0 +1,14 @@
+planet:
+  name: "Your planet name"
+  link: https://PLANET_URL
+  feed_timeout: 3
+  items_for_planet: 10
+  output_dir: ./          # current dir
+  template_files:
+    - ./index.html.tmpl   # index template
+    - ./about.html.tmpl   # about template
+feeds:
+  htts://FIRST_FEED_RSS/:
+    name: FIRST_FEED_NAME
+  https://SECOND_FEED_RSS/:
+    name: SECOND_FEED_NAME
