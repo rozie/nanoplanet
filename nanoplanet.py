@@ -2,12 +2,14 @@ import argparse
 import logging
 import sys
 from datetime import datetime, timezone
+from urllib.parse import urljoin
 
 import bleach
 import dateutil.parser
 import feedparser
 import requests
 import yaml
+from bs4 import BeautifulSoup
 from jinja2 import Template
 
 logger = logging.getLogger(__name__)
@@ -28,6 +30,17 @@ def sanitize_content(content):
     return sanitized_content
 
 
+def expand_urls(content, base_url):
+    soup = BeautifulSoup(content, 'html.parser')
+    for anchor in soup.find_all('a'):
+        if 'href' in anchor.attrs:
+            href = anchor['href']
+            if href.startswith('/'):
+                absolute_url = urljoin(base_url, href)
+                anchor['href'] = absolute_url
+    return str(soup)
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description='Microplanet - very simple planet generator')
@@ -44,11 +57,11 @@ def parse_arguments():
     return args
 
 
-def jinjarenderer(file, name, channels, items):
+def jinjarenderer(file, name, channels, items, date):
     with open(file, "r", encoding="utf8") as tfile:
         template = tfile.read()
     t = Template(template)
-    res = t.render(name=name, Channels=channels, Items=items)
+    res = t.render(name=name, Channels=channels, Items=items, date=date)
     return res
 
 
@@ -111,19 +124,22 @@ def main():
     # prepare entries to be rendered
     items = []
     for dobj in sorted_datetime_objects[:howmany]:
+        link = all_entries[dobj]['link']
+        modified_description = expand_urls(content=all_entries[dobj]['description'], base_url=link)
         items.append({
             'blogtitle': all_entries[dobj]['blogtitle'],
             'feedlink': all_entries[dobj]['feedlink'],
             'name': all_entries[dobj]['name'],
-            'description': all_entries[dobj]['description'],
+            'description': modified_description,
             'title': all_entries[dobj]['title'],
-            'link': all_entries[dobj]['link']
+            'link': link
         })
 
     # generate output files
+    date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     for file in template_files:
         filename = file.replace(".tmpl", "")
-        content = jinjarenderer(file=file, name=planetname, channels=channels, items=items)
+        content = jinjarenderer(file=file, name=planetname, channels=channels, items=items, date=date)
 
         with open (filename, "w", encoding="utf8") as f:
             f.write(content)
