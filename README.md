@@ -26,6 +26,7 @@ Assumptions and limitations
 9. Publication date is used as article idientifier for simplicity - in practice collisions are unlikely.
 10. N newest articles are published on the planet.
 11. Output files have the same names as template files, with .tmpl removed.
+12. Feed for planet is generated if filename is specified in the configuration file.
 
 How to use
 -------

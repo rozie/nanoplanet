@@ -1,6 +1,5 @@
 import argparse
 import logging
-import sys
 from datetime import datetime, timezone
 from urllib.parse import urljoin
 
@@ -10,9 +9,49 @@ import feedparser
 import requests
 import yaml
 from bs4 import BeautifulSoup
+from feedgen.feed import FeedGenerator
 from jinja2 import Template
 
 logger = logging.getLogger(__name__)
+
+
+def generate_feed(planetname, planetlink, items, lang="en", description="Feed",
+                  feed_type="rss", filename="feed.xml"):
+    """
+    Generate an RSS or Atom feed from items list.
+    feed_type: "rss" or "atom"
+    """
+    fg = FeedGenerator()
+    fg.title(planetname)
+    fg.link(href=planetlink, rel='alternate')
+    fg.link(href=planetlink+filename, rel='self')
+    fg.description(description)
+    fg.language(lang)
+    fg.id(planetlink)
+    fg.updated(datetime.now(timezone.utc))
+
+    for entry in items:
+        fe = fg.add_entry()
+        fe.title(entry['title'])
+        fe.link(href=entry['link'])
+        fe.description(entry['description'])
+        fe.author(name=entry['name'])
+        fe.id(entry['link'])
+
+        if 'pubdate' in entry:
+            fe.published(dateutil.parser.parse(entry['pubdate']))
+            fe.updated(dateutil.parser.parse(entry['pubdate']))
+        else:
+            fe.updated(datetime.now(timezone.utc))
+
+        fe.pubDate(dateutil.parser.parse(entry['pubdate']))
+
+    if feed_type == "rss":
+        fg.rss_file(filename)
+    elif feed_type == "atom":
+        fg.atom_file(filename)
+    else:
+        raise ValueError("Unsupported feed_type. Use 'rss' or 'atom'.")
 
 
 def download_rss(url, timeout):
@@ -76,18 +115,21 @@ def main():
 
     # load config file
     try:
-        with open(args.config, "r") as config:
+        with open(args.config, "r", encoding="utf-8") as config:
             data = yaml.load(config, Loader=yaml.SafeLoader)
     except Exception as e:
         logger.error("Couldn't read config file %s", e)
-    
+
     # read config data
     planetname = data.get('planet', {}).get('name')
-    link = data.get('planet', {}).get('link')
+    planetlink = data.get('planet', {}).get('link')
     timeout = data.get('planet', {}).get('timeout')
     template_files = data.get('planet', {}).get('template_files')
     feeds = data.get('feeds')
     howmany = data.get('planet', {}).get('items_for_planet')
+    rss_filename = data.get('planet', {}).get('rss_filename')
+    feed_lang = data.get('planet', {}).get('feed_lang', 'en')
+    feed_description = data.get('planet', {}).get('feed_description', 'Feed')
 
     all_entries = {}
     channels = []
@@ -116,9 +158,9 @@ def main():
                 all_entries[pubdate]['feedlink'] = sanitize_content(feed.feed.link)
         except Exception as e:
             logger.error("Exception occured on feed %s %s %s", name, feed, e)
-    
+
     # sort all entries by date
-    datetime_objects = [d for d in all_entries.keys()]
+    datetime_objects = list(all_entries.keys())
     sorted_datetime_objects = sorted(datetime_objects, reverse=True)
 
     # prepare entries to be rendered
@@ -132,7 +174,8 @@ def main():
             'name': all_entries[dobj]['name'],
             'description': modified_description,
             'title': all_entries[dobj]['title'],
-            'link': link
+            'link': link,
+            'pubdate': dobj.isoformat()
         })
 
     # generate output files
@@ -143,6 +186,11 @@ def main():
 
         with open (filename, "w", encoding="utf8") as f:
             f.write(content)
+
+    # generate feed files
+    if rss_filename:
+        generate_feed(planetname=planetname, planetlink=planetlink, items=items, lang=feed_lang,
+                      feed_type="rss", filename=rss_filename, description=feed_description)
 
 if __name__ == "__main__":
     main()

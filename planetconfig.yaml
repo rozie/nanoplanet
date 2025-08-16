@@ -3,10 +3,14 @@ planet:
   link: https://PLANET_URL
   feed_timeout: 3
   items_for_planet: 10
-  output_dir: ./          # current dir
+  output_dir: ./              # current dir
   template_files:
-    - ./index.html.tmpl   # index template
-    - ./about.html.tmpl   # about template
+    - ./index.html.tmpl       # index template
+    - ./about.html.tmpl       # about template
+  rss_filename: "planet.rss"  # planet feed filename; feed is generated if present
+  feed_lang: "en"
+  feed_description: "My feed description"
+
 feeds:
   htts://FIRST_FEED_RSS/:
     name: FIRST_FEED_NAME
