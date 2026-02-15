@@ -144,18 +144,22 @@ def main():
             feed = feedparser.parse(rss_data)
             channels.append({'name': name, 'title':feed.feed.title, 'link':feed.feed.link})
             for entry in feed.entries:
-                title = sanitize_content(entry.title)
-                link = sanitize_content(entry.link)
-                datepub = sanitize_content(entry.published)
-                description = sanitize_content(entry.description)
-                pubdate = dateutil.parser.parse(datepub).astimezone(timezone.utc)
-                all_entries[pubdate] = {}
-                all_entries[pubdate]['title'] = title
-                all_entries[pubdate]['link'] = link
-                all_entries[pubdate]['description'] = description
-                all_entries[pubdate]['name'] = name
-                all_entries[pubdate]['blogtitle'] = sanitize_content(feed.feed.title)
-                all_entries[pubdate]['feedlink'] = sanitize_content(feed.feed.link)
+                try:
+                    title = sanitize_content(entry.title)
+                    link = sanitize_content(entry.link)
+                    datepub = sanitize_content(entry.published)
+                    description = sanitize_content(entry.description)
+                    pubdate = dateutil.parser.parse(datepub).astimezone(timezone.utc)
+                    all_entries[pubdate] = {}
+                    all_entries[pubdate]['title'] = title
+                    all_entries[pubdate]['link'] = link
+                    all_entries[pubdate]['description'] = description
+                    all_entries[pubdate]['name'] = name
+                    all_entries[pubdate]['blogtitle'] = sanitize_content(feed.feed.title)
+                    all_entries[pubdate]['feedlink'] = sanitize_content(feed.feed.link)
+                except Exception as e:
+                    logger.error("Error in entry: %s", entry)
+                    logger.error("Exception occured on feed %s %s %s", name, feed, e)
         except Exception as e:
             logger.error("Exception occured on feed %s %s %s", name, feed, e)
 
