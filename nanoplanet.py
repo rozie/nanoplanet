@@ -130,6 +130,7 @@ def main():
     rss_filename = data.get('planet', {}).get('rss_filename')
     feed_lang = data.get('planet', {}).get('feed_lang', 'en')
     feed_description = data.get('planet', {}).get('feed_description', 'Feed')
+    append_authors_to_titles = data.get('planet', {}).get('append_authors_to_titles', False)
 
     all_entries = {}
     channels = []
@@ -146,6 +147,8 @@ def main():
             for entry in feed.entries:
                 try:
                     title = sanitize_content(entry.title)
+                    if append_authors_to_titles:
+                        title = f'{name}: {sanitize_content(entry.title)}'
                     link = sanitize_content(entry.link)
                     datepub = sanitize_content(entry.published)
                     description = sanitize_content(entry.description)

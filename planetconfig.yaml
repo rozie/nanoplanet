@@ -3,6 +3,8 @@ planet:
   link: https://PLANET_URL
   feed_timeout: 3
   items_for_planet: 10
+  # Does "Author: title" titles when enabled
+  append_authors_to_titles: false
   output_dir: ./              # current dir
   template_files:
     - ./index.html.tmpl       # index template
