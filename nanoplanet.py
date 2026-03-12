@@ -151,7 +151,10 @@ def main():
                         datepub = sanitize_content(entry.published)
                     elif 'updated' in entry:
                         datepub = sanitize_content(entry.updated)
-                    description = sanitize_content(entry.description)
+                    if 'description' in entry:
+                        description = sanitize_content(entry.description)
+                    else:
+                        description = ''
                     pubdate = dateutil.parser.parse(datepub).astimezone(timezone.utc)
                     all_entries[pubdate] = {}
                     all_entries[pubdate]['title'] = title
