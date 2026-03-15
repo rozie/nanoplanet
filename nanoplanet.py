@@ -56,7 +56,7 @@ def generate_feed(planetname, planetlink, items, lang="en", description="Feed",
 
 def download_rss(url, timeout):
     """Download RSS feed from the given URL."""
-    response = requests.get(url=url, timeout=timeout)
+    response = requests.get(url=url, timeout=(timeout, timeout))
     response.raise_for_status()
     return response.content
 
