@@ -10,6 +10,7 @@ planet:
   rss_filename: "planet.rss"  # planet feed filename; feed is generated if present
   feed_lang: "en"
   feed_description: "My feed description"
+  feed_append_author_to_title: true
 
 feeds:
   htts://FIRST_FEED_RSS/:

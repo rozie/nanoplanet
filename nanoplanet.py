@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def generate_feed(planetname, planetlink, items, lang="en", description="Feed",
-                  feed_type="rss", filename="feed.xml"):
+                  feed_type="rss", filename="feed.xml", append_author=False):
     """
     Generate an RSS or Atom feed from items list.
     feed_type: "rss" or "atom"
@@ -32,7 +32,11 @@ def generate_feed(planetname, planetlink, items, lang="en", description="Feed",
 
     for entry in items:
         fe = fg.add_entry()
-        fe.title(entry['title'])
+        if append_author:
+            title = f"{entry['name']}: {entry['title']}"
+        else:
+            title = entry['title']
+        fe.title(title)
         fe.link(href=entry['link'])
         fe.description(entry['description'])
         fe.author(name=entry['name'])
@@ -130,6 +134,7 @@ def main():
     rss_filename = data.get('planet', {}).get('rss_filename')
     feed_lang = data.get('planet', {}).get('feed_lang', 'en')
     feed_description = data.get('planet', {}).get('feed_description', 'Feed')
+    feed_append_author_to_title = data.get('planet', {}).get('feed_append_author_to_title', False)
 
     all_entries = {}
     channels = []
@@ -200,7 +205,7 @@ def main():
     # generate feed files
     if rss_filename:
         generate_feed(planetname=planetname, planetlink=planetlink, items=items, lang=feed_lang,
-                      feed_type="rss", filename=rss_filename, description=feed_description)
+                      feed_type="rss", filename=rss_filename, description=feed_description, append_author=feed_append_author_to_title)
 
 if __name__ == "__main__":
     main()
